@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <png.h>
+#include <getopt.h>
 
 #include "stegoc.h"
 
@@ -13,17 +14,88 @@ png_bytep *row_pointers;
 
 int main(int argc, char *argv[])
 {
+  int eflag = 0;
+  int dflag = 0;
+  char *inputFileName = NULL;
+  char *fileToEncodeName = NULL;
+  char *outputFileName = NULL;
+  char *chanarg;
+  char *channelName;
+  int channel;
+  int c;
 
-  if(strcmp(argv[1], "--encode") == 0) {
+  opterr = 0;
 
-    if(argc != 5) {
-      printf("%s %s %s %s\n", "Usage:", argv[0], "--encode",
-             "<INPUT.PNG> <OUTPUT.PNG> <FILE>");
+  while ((c = getopt (argc, argv, "e:d:o:c:x:")) != -1) {
+    switch (c)
+      {
+      case 'e':
+        eflag = 1;
+        inputFileName = optarg;
+        break;
+      case 'd':
+        dflag = 1;
+        inputFileName = optarg;
+        break;
+      case 'o':
+        outputFileName = optarg;
+        break;
+      case 'c':
+        chanarg = optarg;
+        break;
+      case 'x':
+        fileToEncodeName = optarg;
+        break;
+      case '?':
+        return 1;
+      default:
+        abort ();
+      }
+    }
+
+	if (strcmp(chanarg, "1") == 0) 
+	{
+		channel = 0;
+    channelName = "RED";
+	} 
+	else if (strcmp(chanarg, "2") == 0)
+	{
+		channel = 1;
+    channelName = "GREEN";
+	}
+	else if (strcmp(chanarg, "3") == 0)
+	{
+		channel = 2;
+    channelName = "BLUE";
+	}
+	else if (strcmp(chanarg, "4") == 0)
+	{
+		channel = 3;
+    channelName = "ALPHA";
+	}
+	else /* default: */
+	{
+    printf("%s %s\n", "Error:", "Channel must be between 1 and 4");
+    printf("%s\n------------\n", "Channel map:");
+    printf("  %6s %s\n", "RED:", "1");
+    printf("  %6s %s\n", "GREEN:", "2");
+    printf("  %6s %s\n", "BLUE:", "3");
+    printf("  %6s %s\n", "ALPHA:", "4");
+    exit(1);
+	}
+
+  if(eflag) {
+
+    if(argc != 9) {
+      printf("%s %s %s\n", "Usage:", argv[0],
+             "-e <INPUT.PNG> -o <OUTPUT.PNG> -x <FILE> -c <CHANNEL>");
       exit(1);
     }
 
+    printf("Encoding %s into %s on %s channel and outputting to %s\n", fileToEncodeName, inputFileName, channelName, outputFileName);
+
     FILE* fileToEncode = NULL;
-    fileToEncode = fopen(argv[4],"rb");
+    fileToEncode = fopen(fileToEncodeName, "rb");
 
     if(!fileToEncode)
       exit(1);
@@ -32,29 +104,35 @@ int main(int argc, char *argv[])
     unsigned long size = ftell(fileToEncode);
     rewind(fileToEncode);
 
-    read_png_file(argv[2]);
-    encode_lsb_red(fileToEncode, size);
-    write_png_file(argv[3]);
+    read_png_file(inputFileName);
+    encode_lsb(fileToEncode, size, channel);
+    write_png_file(outputFileName);
+
+    printf("Success!\n");
 
     return 0;
   }
 
-  if(strcmp(argv[1], "--decode") == 0) {
+  if(dflag) {
 
-    if(argc != 4) {
-      printf("%s %s %s %s\n", "Usage:", argv[0], "--decode",
-             "<INPUT.PNG> <OUTPUT_FILE>");
+    if(argc != 7) {
+      printf("%s %s %s\n", "Usage:", argv[0],
+             "-d <INPUT.PNG> -o <OUTPUT_FILE> -c <CHANNEL>");
       exit(1);
     }
 
+    printf("Decoding %s channel of %s and outputting to %s\n", channelName, inputFileName, outputFileName);
+
     FILE* outputFile = NULL;
-    outputFile = fopen(argv[3],"ab*");
+    outputFile = fopen(outputFileName, "ab*");
 
     if(!outputFile)
       exit(1);
 
-    read_png_file(argv[2]);
-    decode_lsb_red(outputFile);
+    read_png_file(inputFileName);
+    decode_lsb(outputFile, channel);
+
+    printf("Success!\n");
 
     return 0;
   }
@@ -160,7 +238,7 @@ void write_png_file(char *filename) {
   fclose(fp);
 }
 
-void encode_lsb_red(FILE* fileToEncode, unsigned long size)
+void encode_lsb(FILE* fileToEncode, unsigned long size, int channel)
 {
   unsigned char buffer = 0;
 
@@ -174,13 +252,12 @@ void encode_lsb_red(FILE* fileToEncode, unsigned long size)
 
       if(y == 0 && x < (sizeof(long) * 8)){
         if((size & ipow(2, x))) {
-          px[0] |= 1;
+          px[channel] |= 1;
         }
         else {
-          px[0] &= 0xFE;
+          px[channel] &= 0xFE;
         }
       }
-
 
       if(y != 0) {
         if(x % 8 == 0) {
@@ -189,10 +266,10 @@ void encode_lsb_red(FILE* fileToEncode, unsigned long size)
 
         if(!feof(fileToEncode)) {
           if(buffer & ipow(2, x % 8)) {
-            px[0] |= 1;
+            px[channel] |= 1;
           }
           else {
-            px[0] &= 0xFE;
+            px[channel] &= 0xFE;
           }
         }
       }
@@ -200,7 +277,7 @@ void encode_lsb_red(FILE* fileToEncode, unsigned long size)
   }
 }
 
-void decode_lsb_red(FILE* outputFile)
+ void decode_lsb(FILE* outputFile, int channel)
 {
   unsigned int size = 0;
   int counter = 0;
@@ -215,13 +292,13 @@ void decode_lsb_red(FILE* outputFile)
       png_bytep px = &(row[x * 4]);
 
       if(y == 0 && x < (sizeof(long) * 8)){
-        size |= ((px[0] & 1 ) << x);
+        size |= ((px[channel] & 1 ) << x);
       }
 
       if(y > 0) {
         if(counter < size * 8 * 8) {
 
-          buffer |= ((px[0] & 1) << counter % 8);
+          buffer |= ((px[channel] & 1) << counter % 8);
           counter++;
 
           if(counter % 8 == 0){
