@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
 
   while ((c = getopt (argc, argv, "e:d:o:c:x:")) != -1) {
     switch (c)
-      {
+    {
       case 'e':
         eflag = 1;
         inputFileName = optarg;
@@ -50,31 +50,31 @@ int main(int argc, char *argv[])
         return 1;
       default:
         abort ();
-      }
     }
+  }
 
-	if (strcmp(chanarg, "1") == 0) 
-	{
-		channel = 0;
+  if (strcmp(chanarg, "1") == 0) 
+  {
+    channel = 0;
     channelName = "RED";
-	} 
-	else if (strcmp(chanarg, "2") == 0)
-	{
-		channel = 1;
+  } 
+  else if (strcmp(chanarg, "2") == 0)
+  {
+    channel = 1;
     channelName = "GREEN";
-	}
-	else if (strcmp(chanarg, "3") == 0)
-	{
-		channel = 2;
+  }
+  else if (strcmp(chanarg, "3") == 0)
+  {
+    channel = 2;
     channelName = "BLUE";
-	}
-	else if (strcmp(chanarg, "4") == 0)
-	{
-		channel = 3;
+  }
+  else if (strcmp(chanarg, "4") == 0)
+  {
+    channel = 3;
     channelName = "ALPHA";
-	}
-	else /* default: */
-	{
+  }
+  else /* default: */
+  {
     printf("%s %s\n", "Error:", "Channel must be between 1 and 4");
     printf("%s\n------------\n", "Channel map:");
     printf("  %6s %s\n", "RED:", "1");
@@ -82,13 +82,13 @@ int main(int argc, char *argv[])
     printf("  %6s %s\n", "BLUE:", "3");
     printf("  %6s %s\n", "ALPHA:", "4");
     exit(1);
-	}
+  }
 
   if(eflag) {
 
     if(argc != 9) {
       printf("%s %s %s\n", "Usage:", argv[0],
-             "-e <INPUT.PNG> -o <OUTPUT.PNG> -x <FILE> -c <CHANNEL>");
+          "-e <INPUT.PNG> -o <OUTPUT.PNG> -x <FILE> -c <CHANNEL>");
       exit(1);
     }
 
@@ -117,7 +117,7 @@ int main(int argc, char *argv[])
 
     if(argc != 7) {
       printf("%s %s %s\n", "Usage:", argv[0],
-             "-d <INPUT.PNG> -o <OUTPUT_FILE> -c <CHANNEL>");
+          "-d <INPUT.PNG> -o <OUTPUT_FILE> -c <CHANNEL>");
       exit(1);
     }
 
@@ -174,12 +174,12 @@ void read_png_file(char *filename) {
 
   // These color_type don't have an alpha channel then fill it with 0xff.
   if(color_type == PNG_COLOR_TYPE_RGB ||
-     color_type == PNG_COLOR_TYPE_GRAY ||
-     color_type == PNG_COLOR_TYPE_PALETTE)
+      color_type == PNG_COLOR_TYPE_GRAY ||
+      color_type == PNG_COLOR_TYPE_PALETTE)
     png_set_filler(png, 0xFF, PNG_FILLER_AFTER);
 
   if(color_type == PNG_COLOR_TYPE_GRAY ||
-     color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
+      color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
     png_set_gray_to_rgb(png);
 
   png_read_update_info(png, info);
@@ -212,15 +212,15 @@ void write_png_file(char *filename) {
 
   // Output is 8bit depth, RGBA format.
   png_set_IHDR(
-    png,
-    info,
-    width, height,
-    8,
-    PNG_COLOR_TYPE_RGBA,
-    PNG_INTERLACE_NONE,
-    PNG_COMPRESSION_TYPE_DEFAULT,
-    PNG_FILTER_TYPE_DEFAULT
-  );
+      png,
+      info,
+      width, height,
+      8,
+      PNG_COLOR_TYPE_RGBA,
+      PNG_INTERLACE_NONE,
+      PNG_COMPRESSION_TYPE_DEFAULT,
+      PNG_FILTER_TYPE_DEFAULT
+      );
   png_write_info(png, info);
 
   // To remove the alpha channel for PNG_COLOR_TYPE_RGB format,
@@ -277,7 +277,7 @@ void encode_lsb(FILE* fileToEncode, unsigned long size, int channel)
   }
 }
 
- void decode_lsb(FILE* outputFile, int channel)
+void decode_lsb(FILE* outputFile, int channel)
 {
   unsigned int size = 0;
   int counter = 0;
