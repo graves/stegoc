@@ -4,6 +4,7 @@
 
 ### Some stuff u can do with stegoc
 
+```
 ~/P/stegoc ❯❯❯ make clean stegoc
 rm -f stegoc
 gcc -Wall -lpng -o stegoc stegoc.c
@@ -17,7 +18,6 @@ Decoding RED channel of out.png and outputting to tmp/out.key
 Success!
 
 ~/P/stegoc ❯❯❯ cat tmp/out.key
-```
 -----BEGIN PGP PUBLIC KEY BLOCK-----
 
 mQINBFnYdrMBEADZjxU8iIY8GpCM7vXWhwF3jRAefPsbseLVkSexXkYu8oM5qyof
@@ -69,7 +69,7 @@ kUkq6w5ZL0jJzHZcLfmNUZiraV+nabPd8S/tS85WL1DTz8758gvBr+RCFb3k/IRO
 uIkmdpq5+Xl8qC6ZDlkdvcTN4WfLu0mLvVL2v2YCdwU0OT66qV0w5WpKHPbf
 =UWRy
 -----END PGP PUBLIC KEY BLOCK-----
-```
+
 ~/P/stegoc ❯❯❯ ./stegoc -s out.png -o tmp/stuffed.png -h yuh.html
 Stuffing yuh.html in out.png tEXT chunks and outputting in tmp/stuffed.png
 Success!
@@ -90,7 +90,6 @@ Decoding RED channel of tmp/stuffed.png and outputting to tmp/stuffed-out.key
 Success!
 
 ~/P/stegoc ❯❯❯ cat tmp/stuffed-out.key
-```
 -----BEGIN PGP PUBLIC KEY BLOCK-----
 
 mQINBFnYdrMBEADZjxU8iIY8GpCM7vXWhwF3jRAefPsbseLVkSexXkYu8oM5qyof
@@ -142,5 +141,6 @@ kUkq6w5ZL0jJzHZcLfmNUZiraV+nabPd8S/tS85WL1DTz8758gvBr+RCFb3k/IRO
 uIkmdpq5+Xl8qC6ZDlkdvcTN4WfLu0mLvVL2v2YCdwU0OT66qV0w5WpKHPbf
 =UWRy
 -----END PGP PUBLIC KEY BLOCK-----
-```
+
 ~/P/stegoc ❯❯❯ aw yay
+```
