@@ -3,6 +3,8 @@
 #include <string.h>
 #include <png.h>
 #include <getopt.h>
+#include <sys/time.h>
+
 
 #include "stegoc.h"
 
@@ -16,17 +18,21 @@ int main(int argc, char *argv[])
 {
   int eflag = 0;
   int dflag = 0;
+  int sflag = 0;
   char *inputFileName = NULL;
   char *fileToEncodeName = NULL;
   char *outputFileName = NULL;
+  char *htmlFileName = NULL;
   char *chanarg;
   char *channelName;
   int channel;
   int c;
+  FILE* outputFile = NULL;
+  FILE* fileToEncode = NULL;
 
   opterr = 0;
 
-  while ((c = getopt (argc, argv, "e:d:o:c:x:")) != -1) {
+  while ((c = getopt (argc, argv, "e:d:s:o:c:x:h:")) != -1) {
     switch (c)
     {
       case 'e':
@@ -35,6 +41,10 @@ int main(int argc, char *argv[])
         break;
       case 'd':
         dflag = 1;
+        inputFileName = optarg;
+        break;
+      case 's':
+        sflag = 1;
         inputFileName = optarg;
         break;
       case 'o':
@@ -46,6 +56,9 @@ int main(int argc, char *argv[])
       case 'x':
         fileToEncodeName = optarg;
         break;
+      case 'h':
+        htmlFileName = optarg;
+        break;
       case '?':
         return 1;
       default:
@@ -53,35 +66,37 @@ int main(int argc, char *argv[])
     }
   }
 
-  if (strcmp(chanarg, "1") == 0) 
-  {
-    channel = 0;
-    channelName = "RED";
-  } 
-  else if (strcmp(chanarg, "2") == 0)
-  {
-    channel = 1;
-    channelName = "GREEN";
-  }
-  else if (strcmp(chanarg, "3") == 0)
-  {
-    channel = 2;
-    channelName = "BLUE";
-  }
-  else if (strcmp(chanarg, "4") == 0)
-  {
-    channel = 3;
-    channelName = "ALPHA";
-  }
-  else /* default: */
-  {
-    printf("%s %s\n", "Error:", "Channel must be between 1 and 4");
-    printf("%s\n------------\n", "Channel map:");
-    printf("  %6s %s\n", "RED:", "1");
-    printf("  %6s %s\n", "GREEN:", "2");
-    printf("  %6s %s\n", "BLUE:", "3");
-    printf("  %6s %s\n", "ALPHA:", "4");
-    exit(1);
+  if (eflag || dflag) {
+    if (strcmp(chanarg, "1") == 0) 
+    {
+      channel = 0;
+      channelName = "RED";
+    } 
+    else if (strcmp(chanarg, "2") == 0)
+    {
+      channel = 1;
+      channelName = "GREEN";
+    }
+    else if (strcmp(chanarg, "3") == 0)
+    {
+      channel = 2;
+      channelName = "BLUE";
+    }
+    else if (strcmp(chanarg, "4") == 0)
+    {
+      channel = 3;
+      channelName = "ALPHA";
+    }
+    else /* default: */
+    {
+      printf("%s %s\n", "Error:", "Channel must be between 1 and 4");
+      printf("%s\n------------\n", "Channel map:");
+      printf("  %6s %s\n", "RED:", "1");
+      printf("  %6s %s\n", "GREEN:", "2");
+      printf("  %6s %s\n", "BLUE:", "3");
+      printf("  %6s %s\n", "ALPHA:", "4");
+      exit(1);
+    }
   }
 
   if(eflag) {
@@ -92,13 +107,11 @@ int main(int argc, char *argv[])
       exit(1);
     }
 
-    printf("Encoding %s into %s on %s channel and outputting to %s\n", fileToEncodeName, inputFileName, channelName, outputFileName);
+    printf("Encoding %s into %s on %s channel and outputting to %s\n", 
+        fileToEncodeName, inputFileName, channelName, outputFileName);
 
-    FILE* fileToEncode = NULL;
     fileToEncode = fopen(fileToEncodeName, "rb");
-
-    if(!fileToEncode)
-      exit(1);
+    if( !fileToEncode ) perror(fileToEncodeName),exit(1);
 
     fseek(fileToEncode, 0L, SEEK_END);
     unsigned long size = ftell(fileToEncode);
@@ -107,6 +120,8 @@ int main(int argc, char *argv[])
     read_png_file(inputFileName);
     encode_lsb(fileToEncode, size, channel);
     write_png_file(outputFileName);
+
+    fclose(fileToEncode);
 
     printf("Success!\n");
 
@@ -121,16 +136,44 @@ int main(int argc, char *argv[])
       exit(1);
     }
 
-    printf("Decoding %s channel of %s and outputting to %s\n", channelName, inputFileName, outputFileName);
+    printf("Decoding %s channel of %s and outputting to %s\n", 
+        channelName, inputFileName, outputFileName);
 
-    FILE* outputFile = NULL;
     outputFile = fopen(outputFileName, "ab*");
-
-    if(!outputFile)
-      exit(1);
+    if( !outputFile ) perror(outputFileName),exit(1);
 
     read_png_file(inputFileName);
     decode_lsb(outputFile, channel);
+
+    fclose(outputFile);
+
+    printf("Success!\n");
+
+    return 0;
+  }
+
+  if(sflag) {
+
+    if(argc != 7) {
+      printf("%s %s %s\n", "Usage:", argv[0],
+          "-s <INPUT.PNG> -h <FILE.HTML> -o <OUTPUT_FILE>");
+      exit(1);
+    }
+
+    printf("Stuffing %s in %s tEXT chunks and outputting in %s\n",
+        htmlFileName, inputFileName, outputFileName);
+
+    FILE* htmlFile = fopen ( htmlFileName , "rb" );
+    if( !htmlFile ) perror(htmlFileName),exit(1);
+
+    int r = randint();
+
+    char *randchars = randstring(r);
+    
+    read_png_file(inputFileName);
+    stuff_html(outputFileName, htmlFile, randchars);
+
+    fclose(htmlFile);
 
     printf("Success!\n");
 
@@ -194,9 +237,8 @@ void read_png_file(char *filename) {
   fclose(fp);
 }
 
-void write_png_file(char *filename) {
-  int y;
-
+void write_png_file(char *filename) 
+{
   FILE *fp = fopen(filename, "wb");
   if(!fp) abort();
 
@@ -209,6 +251,100 @@ void write_png_file(char *filename) {
   if (setjmp(png_jmpbuf(png))) abort();
 
   png_init_io(png, fp);
+
+  // Output is 8bit depth, RGBA format.
+  png_set_IHDR(
+      png,
+      info,
+      width, height,
+      8,
+      PNG_COLOR_TYPE_RGBA,
+      PNG_INTERLACE_NONE,
+      PNG_COMPRESSION_TYPE_DEFAULT,
+      PNG_FILTER_TYPE_DEFAULT
+      );
+  png_write_info(png, info);
+
+  // To remove the alpha channel for PNG_COLOR_TYPE_RGB format,
+  // Use png_set_filler().
+  //png_set_filler(png, 0, PNG_FILLER_AFTER);
+
+  png_write_image(png, row_pointers);
+  png_write_end(png, NULL);
+
+  for(int y = 0; y < height; y++) {
+    free(row_pointers[y]);
+  }
+  free(row_pointers);
+
+  fclose(fp);
+}
+
+void stuff_html(char *outputFileName, FILE* htmlFile, char* randchars) 
+{
+   
+  char *htmlstrbegin = htmlstrbegin = "--> ";
+
+  fseek( htmlFile , 0L , SEEK_END);
+  size_t lSize = ftell( htmlFile );
+  rewind( htmlFile );
+
+  char* htmlbuf = calloc( 1, lSize+1 );
+  if( !htmlbuf ) fclose(htmlFile),fputs("Failed allocating memory for html",
+      stderr),exit(1);
+
+  if( 1!=fread( htmlbuf , lSize, 1 , htmlFile) )
+    fclose(htmlFile),free(htmlbuf),fputs("Failed reading html file",
+        stderr),exit(1);
+
+  char *dest = malloc(strlen(htmlstrbegin) + strlen(htmlbuf));
+  strcpy(dest, htmlstrbegin);
+  
+  dest = strcat(dest, htmlbuf);
+
+  png_text text_ptr[3];
+
+  char *key0 = "Title";
+  char *text0 = "<html> <-- ";
+  text_ptr[0].key = key0;
+  text_ptr[0].text = text0;
+  text_ptr[0].compression = PNG_TEXT_COMPRESSION_NONE;
+  text_ptr[0].itxt_length = 0;
+  text_ptr[0].lang = NULL;
+  text_ptr[0].lang_key = NULL;
+
+  char *key1 = "Author";
+  char *text1 = randchars;
+  text_ptr[1].key = key1;
+  text_ptr[1].text = text1;
+  text_ptr[1].compression = PNG_TEXT_COMPRESSION_NONE;
+  text_ptr[1].itxt_length = 0;
+  text_ptr[1].lang = NULL;
+  text_ptr[1].lang_key = NULL;
+
+  char *key2 = "Description";
+  char *text2 = dest;
+  text_ptr[2].key = key2;
+  text_ptr[2].text = text2;
+  text_ptr[2].compression = PNG_TEXT_COMPRESSION_NONE;
+  text_ptr[2].itxt_length = 0;
+  text_ptr[2].lang = NULL;
+  text_ptr[2].lang_key = NULL;
+
+  FILE *fp = fopen(outputFileName, "wb");
+  if(!fp) abort();
+
+  png_structp png = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+  if (!png) abort();
+
+  png_infop info = png_create_info_struct(png);
+  if (!info) abort();
+
+  if (setjmp(png_jmpbuf(png))) abort();
+
+  png_init_io(png, fp);
+
+  png_set_text(png, info, text_ptr, 3);
 
   // Output is 8bit depth, RGBA format.
   png_set_IHDR(
@@ -336,4 +472,41 @@ int ipow(int base, int exp)
   }
 
   return result;
+}
+
+char *randstring(int size)
+{
+  const char charset[] = 
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+  char *str;
+  str = malloc(sizeof(char) * (size + 1));
+
+  if (size) {
+    --size;
+
+    for (int n = 0; n < size; n++) {
+      int key = rand() % (int) (sizeof charset - 1);
+      str[n] = charset[key];
+    }
+
+    str[size] = '\0';
+  }
+
+  return str;
+}
+
+int randint(void)
+{
+  struct timeval t1;
+
+  gettimeofday(&t1, NULL);
+  srand(t1.tv_usec * t1.tv_sec);
+
+  int a = 1, b = 12;
+
+  int val = a + (b-a) * (double)rand() / (double)RAND_MAX + 0.5;
+  int smallval = val % 2048;
+
+  return smallval;
 }
