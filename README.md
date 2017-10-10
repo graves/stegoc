@@ -2,7 +2,7 @@
 
 ## Fun with LSB Stegonagraphy
 
-![holler at a scholar](https://raw.githubusercontent.com/graves/stegoc/master/loser.png)
+![holler at a scholar](https://github.com/graves/stegoc/raw/master/build/tryme.png)
 
 ### Some stuff u can do with stegoc
 
