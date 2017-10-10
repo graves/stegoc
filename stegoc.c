@@ -304,8 +304,8 @@ void stuff_html(char *outputFileName, FILE* htmlFile, char* randchars)
 
   png_text text_ptr[3];
 
-  char *key0 = "Title";
-  char *text0 = "<html> <-- ";
+  char *key0 = "<html>";
+  char *text0 = "<-- ";
   text_ptr[0].key = key0;
   text_ptr[0].text = text0;
   text_ptr[0].compression = PNG_TEXT_COMPRESSION_NONE;
