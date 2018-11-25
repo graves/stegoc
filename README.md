@@ -4,7 +4,7 @@
 
 ![holler at a scholar](https://github.com/graves/stegoc/raw/master/build/tryme.png)
 
-After reading [http://stegosploit.info](Stegosploit) in [https://www.alchemistowl.org/pocorgtfo/pocorgtfo08.pdf](PoC||gtfo Vol. 8)
+After reading [8:7 Weaponized Polyglots as Browser Exploits](https://www.alchemistowl.org/pocorgtfo/pocorgtfo08.pdf)
 I became briefly obsessed with hiding all manners of weird polyglots in my 
 resume to which this library is in service of. Download the above picture,
 change the file extension to html, play with it a bit.
