@@ -4,22 +4,27 @@
 
 ![holler at a scholar](https://github.com/graves/stegoc/raw/master/build/tryme.png)
 
-### Some stuff u can do with stegoc
+After reading [http://stegosploit.info](Stegosploit) in [https://www.alchemistowl.org/pocorgtfo/pocorgtfo08.pdf](PoC||gtfo Vol. 8)
+I became briefly obsessed with hiding all manners of weird polyglots in my 
+resume to which this library is in service of. Download the above picture,
+change the file extension to html, play with it a bit.
+
+### Usage
 
 ```
-~/P/stegoc ❯❯❯ make clean stegoc
+→ make clean stegoc 
 rm -f stegoc
 gcc -Wall -lpng -o stegoc stegoc.c
 
-~/P/stegoc ❯❯❯ ./stegoc -e loser.png -o out.png -x tmp/public.key -c 1
+→ ./stegoc -e loser.png -o out.png -x tmp/public.key -c 1
 Encoding tmp/public.key into loser.png on RED channel and outputting to out.png
 Success!
 
-~/P/stegoc ❯❯❯ ./stegoc -d out.png -o tmp/out.key -c 1
+→ ./stegoc -d out.png -o tmp/out.key -c 1
 Decoding RED channel of out.png and outputting to tmp/out.key
 Success!
 
-~/P/stegoc ❯❯❯ cat tmp/out.key
+→ cat tmp/out.key
 -----BEGIN PGP PUBLIC KEY BLOCK-----
 
 mQINBFnYdrMBEADZjxU8iIY8GpCM7vXWhwF3jRAefPsbseLVkSexXkYu8oM5qyof
@@ -72,11 +77,11 @@ uIkmdpq5+Xl8qC6ZDlkdvcTN4WfLu0mLvVL2v2YCdwU0OT66qV0w5WpKHPbf
 =UWRy
 -----END PGP PUBLIC KEY BLOCK-----
 
-~/P/stegoc ❯❯❯ ./stegoc -s out.png -o tmp/stuffed.png -h yuh.html
+→ ./stegoc -s out.png -o tmp/stuffed.png -h yuh.html
 Stuffing yuh.html in out.png tEXT chunks and outputting in tmp/stuffed.png
 Success!
 
-~/P/stegoc ❯❯❯ pngcheck -7 tmp/stuffed.png
+→ pngcheck -7 tmp/stuffed.png
 File: tmp/stuffed.png (304708 bytes)
 Title:
     <html> <--
@@ -87,11 +92,11 @@ Description:
 
 OK: tmp/stuffed.png (1600x1200, 32-bit RGB+alpha, non-interlaced, 96.0%).
 
-~/P/stegoc ❯❯❯ ./stegoc -d tmp/stuffed.png -o tmp/stuffed-out.key -c 1
+→ ./stegoc -d tmp/stuffed.png -o tmp/stuffed-out.key -c 1
 Decoding RED channel of tmp/stuffed.png and outputting to tmp/stuffed-out.key
 Success!
 
-~/P/stegoc ❯❯❯ cat tmp/stuffed-out.key
+→ cat tmp/stuffed-out.key
 -----BEGIN PGP PUBLIC KEY BLOCK-----
 
 mQINBFnYdrMBEADZjxU8iIY8GpCM7vXWhwF3jRAefPsbseLVkSexXkYu8oM5qyof
@@ -144,5 +149,4 @@ uIkmdpq5+Xl8qC6ZDlkdvcTN4WfLu0mLvVL2v2YCdwU0OT66qV0w5WpKHPbf
 =UWRy
 -----END PGP PUBLIC KEY BLOCK-----
 
-~/P/stegoc ❯❯❯ aw yay
 ```
